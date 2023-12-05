@@ -1,4 +1,4 @@
-module errtags
+module github.com/hitorisensei/errtags
 
 go 1.21
 

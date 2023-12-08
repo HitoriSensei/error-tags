@@ -1,18 +1,26 @@
 package errtags
 
-func isSubset[T comparable](sliceA []T, sliceB []T) bool {
-	for _, itemB := range sliceB {
-		found := false
-		for _, itemA := range sliceA {
-			if itemB == itemA {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
+import "slices"
+
+func isSubSlice[T comparable](sliceA []T, sliceB []T) bool {
+	// This special case is not needed in this implementation as slices are never empty.
+	//if len(sliceB) == 0 {
+	//	return true
+	//}
+
+	if len(sliceB) > len(sliceA) {
+		return false
 	}
 
-	return true
+	first := sliceB[0]
+
+	for i, itemA := range sliceA {
+		if itemA != first {
+			continue
+		}
+
+		return slices.Equal(sliceA[i:i+len(sliceB)], sliceB)
+	}
+
+	return false
 }

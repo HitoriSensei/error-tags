@@ -249,4 +249,77 @@ func TestUnion(t *testing.T) {
 	assert.NotErrorIs(t, redTagged, colorfulTaggedWithMessage)
 	assert.NotErrorIs(t, blueTagged, colorfulTaggedWithMessage)
 	assert.Equal(t, "message: some error", colorfulTaggedWithMessage.Error())
+
+	// unions are identical if they have the same tags, regardless of order
+	unionA := UnionTag(redTag, blueTag)
+	unionB := UnionTag(blueTag, redTag)
+
+	unionATagged := unionA.Tag(someError)
+	unionBTagged := unionB.Tag(someError)
+
+	assert.Equal(t, unionA, unionB)
+	assert.Equal(t, unionATagged, unionBTagged)
+
+	assert.ErrorIs(t, unionATagged, unionA)
+	assert.ErrorIs(t, unionATagged, unionB)
+
+	assert.ErrorIs(t, unionATagged, unionATagged)
+	assert.ErrorIs(t, unionATagged, unionBTagged)
+
+	assert.ErrorIs(t, unionBTagged, unionA)
+	assert.ErrorIs(t, unionBTagged, unionB)
+
+	assert.ErrorIs(t, unionBTagged, unionATagged)
+	assert.ErrorIs(t, unionBTagged, unionBTagged)
+
+	// WithTags works the same as tagging with UnionTag
+	withTagsTaggedA := WithTags(someError, redTag, blueTag) // same as UnionTag(redTag, blueTag).Tag(someError)
+	withTagsTaggedB := WithTags(someError, blueTag, redTag) // same as UnionTag(blueTag, redTag).Tag(someError)
+	assert.Equal(t, unionATagged, withTagsTaggedA)
+	assert.Equal(t, unionBTagged, withTagsTaggedA)
+	assert.Equal(t, unionATagged, withTagsTaggedB)
+	assert.Equal(t, unionBTagged, withTagsTaggedB)
+
+	assert.ErrorIs(t, withTagsTaggedA, unionA)
+	assert.ErrorIs(t, withTagsTaggedA, unionB)
+	assert.ErrorIs(t, withTagsTaggedB, unionA)
+	assert.ErrorIs(t, withTagsTaggedB, unionB)
+
+}
+
+func TestInclude(t *testing.T) {
+	blueTag := NewTag("blue tag")
+	redTag := NewTag("red tag").Include(blueTag)
+
+	union := UnionTag(redTag, blueTag)
+
+	// union is NOT byte identical to redTag, but they are error-is equal as they have the same tags
+	assert.NotEqual(t, union, redTag)
+	assert.ErrorIs(t, union, redTag)
+	assert.ErrorIs(t, redTag, union)
+
+	someError := errors.New("some error")
+
+	unionTagged := union.Tag(someError)
+	redTagged := redTag.Tag(someError)
+
+	assert.ErrorIs(t, unionTagged, union)
+	assert.ErrorIs(t, unionTagged, redTag)
+	assert.ErrorIs(t, unionTagged, blueTag)
+	assert.ErrorIs(t, redTagged, union)
+	assert.ErrorIs(t, redTagged, redTag)
+	assert.ErrorIs(t, redTagged, blueTag)
+
+	blueTagged := blueTag.Tag(someError)
+
+	assert.ErrorIs(t, redTagged, redTag)
+	assert.ErrorIs(t, redTagged, blueTag)
+	assert.ErrorIs(t, redTagged, someError)
+
+	assert.ErrorIs(t, blueTagged, blueTag)
+	assert.ErrorIs(t, blueTagged, someError)
+
+	assert.NotErrorIs(t, blueTagged, redTag)
+
+	assert.ErrorIs(t, redTag, blueTag)
 }

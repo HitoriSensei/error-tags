@@ -80,7 +80,7 @@ func (e *Tag) Is(err error) bool {
 	//goland:noinspection GoTypeAssertionOnErrors
 	if other, ok := err.(*Tag); ok {
 		// true if either wc.tags or e.tags is a subset of the other
-		return sliceHasCommonSubset(other.tags, e.tags)
+		return isSubset(e.tags, other.tags)
 	}
 
 	return false
@@ -137,6 +137,12 @@ func WithTagsAndMessage(err error, msg string, tags ...*Tag) error {
 	tagged.msgOverride = true
 
 	return tagged
+}
+
+func UnionTag(tags ...*Tag) *Tag {
+	return &Tag{
+		tags: tags,
+	}
 }
 
 // Satisfy common interfaces

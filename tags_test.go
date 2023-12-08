@@ -212,3 +212,41 @@ func TestWithTagsAndMessage(t *testing.T) {
 	assert.ErrorIs(t, colorfulTaggedWithMessage, blueTag)
 	assert.Equal(t, "message: some error", colorfulTaggedWithMessage.Error())
 }
+
+func TestUnion(t *testing.T) {
+	redTag := NewTag("red tag")
+	blueTag := NewTag("blue tag")
+
+	someError := errors.New("some error")
+
+	colorfulTag := UnionTag(redTag, blueTag)
+
+	colorfulTagged := colorfulTag.Tag(someError)
+	redTagged := redTag.Tag(someError)
+	blueTagged := blueTag.Tag(someError)
+
+	assert.Equal(t, []*Tag{redTag, blueTag}, colorfulTag.Tags())
+	assert.ErrorIs(t, colorfulTag, redTag)
+	assert.ErrorIs(t, colorfulTag, blueTag)
+	assert.ErrorIs(t, colorfulTagged, redTag)
+	assert.ErrorIs(t, colorfulTagged, blueTag)
+	assert.ErrorIs(t, colorfulTagged, colorfulTag)
+
+	assert.NotErrorIs(t, redTag, colorfulTag)
+	assert.NotErrorIs(t, redTagged, colorfulTag)
+	assert.NotErrorIs(t, blueTag, colorfulTagged)
+	assert.NotErrorIs(t, blueTagged, colorfulTag)
+
+	colorfulTaggedWithMessage := UnionTag(redTag, blueTag).TagWithMessage(someError, "message")
+
+	assert.Equal(t, []*Tag{redTag, blueTag}, colorfulTaggedWithMessage.(*Tag).Tags())
+	assert.ErrorIs(t, colorfulTaggedWithMessage, redTag)
+	assert.ErrorIs(t, colorfulTaggedWithMessage, blueTag)
+	assert.ErrorIs(t, colorfulTaggedWithMessage, colorfulTag)
+
+	assert.NotErrorIs(t, redTag, colorfulTaggedWithMessage)
+	assert.NotErrorIs(t, blueTag, colorfulTaggedWithMessage)
+	assert.NotErrorIs(t, redTagged, colorfulTaggedWithMessage)
+	assert.NotErrorIs(t, blueTagged, colorfulTaggedWithMessage)
+	assert.Equal(t, "message: some error", colorfulTaggedWithMessage.Error())
+}

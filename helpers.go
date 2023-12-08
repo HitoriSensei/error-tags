@@ -1,13 +1,18 @@
 package errtags
 
-func sliceHasCommonSubset[T comparable](sliceA []T, sliceB []T) bool {
+func isSubset[T comparable](sliceA []T, sliceB []T) bool {
 	for _, itemB := range sliceB {
+		found := false
 		for _, itemA := range sliceA {
 			if itemB == itemA {
-				return true
+				found = true
+				break
 			}
+		}
+		if !found {
+			return false
 		}
 	}
 
-	return false
+	return true
 }

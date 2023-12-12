@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"slices"
 	"strings"
 )
 
@@ -181,11 +180,21 @@ func sort(tags []*Tag) []*Tag {
 	allTags := uniq(getAllTags(tags, nil))
 
 	// sort tags by their pointer value
-	slices.SortFunc(allTags, func(i, j *Tag) int {
+	sortFunc(allTags, func(i, j *Tag) int {
 		return int(reflect.ValueOf(i).Pointer()) - int(reflect.ValueOf(j).Pointer())
 	})
 
 	return allTags
+}
+
+func sortFunc(tags []*Tag, f func(i *Tag, j *Tag) int) {
+	for i := 0; i < len(tags); i++ {
+		for j := i + 1; j < len(tags); j++ {
+			if f(tags[i], tags[j]) > 0 {
+				tags[i], tags[j] = tags[j], tags[i]
+			}
+		}
+	}
 }
 
 func uniq(tags []*Tag) []*Tag {

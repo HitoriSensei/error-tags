@@ -1,7 +1,5 @@
 package errtags
 
-import "slices"
-
 func isSubSlice[T comparable](sliceA []T, sliceB []T) bool {
 	// This special case is not needed in this implementation as slices are never empty.
 	//if len(sliceB) == 0 {
@@ -19,7 +17,19 @@ func isSubSlice[T comparable](sliceA []T, sliceB []T) bool {
 			continue
 		}
 
-		return slices.Equal(sliceA[i:i+len(sliceB)], sliceB)
+		subA := sliceA[i : i+len(sliceB)]
+		if len(subA) != len(sliceB) {
+			return false
+		}
+
+		for j, itemB := range sliceB {
+			itemSubA := subA[j]
+			if itemSubA != itemB {
+				return false
+			}
+		}
+
+		return true
 	}
 
 	return false
